@@ -54,17 +54,6 @@ public class WxController {
     }
 
 
-    @GetMapping("/register")
-    public String register(String openid, ModelMap map) {
-        map.put("openid", openid);
-        return "/upload";  // 我这里是打开上传页面，可根据自己业务需要实际来跳转
-    }
-
-    @GetMapping("/success")
-    public String register() {
-        return "/success";  // 打开注册成功页面
-    }
-
     /**
      * @param signature 微信加密签名，signature结合了开发者填写的token参数和请求中的timestamp参数、nonce参数。
      * @param timestamp 时间戳
