@@ -2,13 +2,11 @@ package com.wdx.springbootwx.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.wdx.springbootwx.config.WxConfig;
-import com.wdx.springbootwx.service.impl.WxServiceImpl;
 import com.wdx.springbootwx.utils.MessageUtil;
 import com.wdx.springbootwx.utils.WxUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 
 @Controller
@@ -25,9 +22,6 @@ public class WxController {
 
     @Autowired
     private WxConfig wxConfig;
-
-    @Autowired
-    private WxServiceImpl service;
 
 
     @GetMapping
@@ -38,7 +32,7 @@ public class WxController {
     }
 
     @GetMapping("/wxCallBack")
-    public String wxCallBack(String code, ModelMap map) throws IOException {
+    public String wxCallBack(String code) throws IOException {
         // 第二步：通过code换取网页授权access_token
         JSONObject jsonObject = WxUtil.wxCallBack(wxConfig.getWebpage_access_token_url(), code);
         String openId = jsonObject.getString("openid");
@@ -59,13 +53,10 @@ public class WxController {
      * @param timestamp 时间戳
      * @param nonce     随机数
      * @param echostr   随机字符串
-     * @return
      */
     @GetMapping("/wx")
     @ResponseBody
-    public String checkSignature(String signature, String timestamp, String nonce, String echostr,
-                                 HttpServletResponse response, HttpServletRequest request) {
-        String method = request.getMethod();
+    public String checkSignature(String signature, String timestamp, String nonce, String echostr) {
             System.out.println(signature);
             System.out.println(timestamp);
             System.out.println(nonce);
@@ -87,7 +78,6 @@ public class WxController {
     public String message(HttpServletResponse response, HttpServletRequest request) {
             log.info("---------接受消息和事件推送----------");
             response.setCharacterEncoding("utf-8");
-            PrintWriter out = null;
             //将微信请求xml转为map格式，获取所需的参数
             Map<String,String> map = MessageUtil.xmlToMap(request);
             String ToUserName = map.get("ToUserName");
