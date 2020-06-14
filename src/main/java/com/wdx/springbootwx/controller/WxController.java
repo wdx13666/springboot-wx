@@ -62,7 +62,7 @@ public class WxController {
             System.out.println(nonce);
             System.out.println(echostr);
             if (WxUtil.checkSignature(signature, timestamp, nonce)) {
-                log.info("---------验证服务结束----------");
+                log.info("----  -----验证服务结束----------");
                 return echostr;
             } else {
                 log.info("---------不是微信服务器发来的请求，请小心----------");
