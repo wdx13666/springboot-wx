@@ -22,7 +22,7 @@ class SpringbootWxApplicationTests {
     void contextLoads() {
         AccessToken accessToken = WxUtil.getAccessToken(config.getAccess_token_url());
         boolean b = WxUtil.menuAdd(config.getAdd_menu_url(), accessToken.getAccess_token());
-//        wxService.menuAdd();
+//        wxService.menuAdd();qwewqeqw
     }
 
 }
