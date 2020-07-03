@@ -6,13 +6,11 @@ import com.wdx.springbootwx.service.impl.WxServiceImpl;
 import com.wdx.springbootwx.utils.MessageUtil;
 import com.wdx.springbootwx.utils.WxUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.descriptor.web.WebXml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +30,7 @@ public class WxController {
     private WxServiceImpl service;
 
 
-    @GetMapping
+    @GetMapping("/wxLogin")
     public String wxLogin() {
         // 第一步：用户同意授权，获取code
         String wxLogin = WxUtil.wxLogin(wxConfig.getCode_url());

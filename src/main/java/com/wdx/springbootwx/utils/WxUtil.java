@@ -172,13 +172,23 @@ public class WxUtil {
         //注意按钮名字不要太长，不然会报40018错误
         button11.setName("技术博客");
         button11.setType("view");
-        button11.setUrl("http://wdx13666.github.io");
+        button11.setUrl("https://wdx13666.github.io");
         //注意链接不要少了https://  否则会报错40055
         ViewButton button22 = new ViewButton();
         //注意按钮名字不要太长，不然会报40018错误
-        button22.setName("my");
+        button22.setName("博客");
         button22.setType("view");
-        button22.setUrl("http://17mb642884.51mypc.cn");
+        button22.setUrl("http://www.kleme.top");
+        ViewButton button4 = new ViewButton();
+        //注意按钮名字不要太长，不然会报40018错误
+        button4.setName("Conan");
+        button4.setType("view");
+        button4.setUrl("https://conanisbest.github.io/");
+        ViewButton button3 = new ViewButton();
+        //注意按钮名字不要太长，不然会报40018错误
+        button3.setName("登录");
+        button3.setType("view");
+        button3.setUrl("http://wx.kleme.top");
         SendPicButton button21 = new SendPicButton();
         button21.setName("发图");
         button21.setType("pic_photo_or_album");
@@ -195,9 +205,9 @@ public class WxUtil {
         button31.setKey("strtest");//事件key
 
         Button buttonView = new Button();
-        buttonView.setName("大雪傻子");
-        buttonView.setSub_button(new Button[]{button11,button22});
-        buttonView.setSub_button(new Button[]{button11,button22});
+        buttonView.setName("技术流");
+        buttonView.setSub_button(new Button[]{button11,button22,button3,button4});
+        buttonView.setSub_button(new Button[]{button11,button22,button3,button4});
 
         Button button = new Button();
         button.setName("服务");
