@@ -68,7 +68,7 @@ public class WxUtil {
     }
 
 
-    public static final String token = "wang.";
+    public static final String token = "wang";
 
     public static boolean checkSignature(String signature, String timestamp, String nonce) {
         String[] str = new String[]{token, timestamp, nonce};

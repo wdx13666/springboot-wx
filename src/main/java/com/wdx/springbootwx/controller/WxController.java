@@ -72,7 +72,7 @@ public class WxController {
      * @param echostr   随机字符串
      * @return
      */
-    @GetMapping("/wx")
+    @GetMapping
     @ResponseBody
     public String checkSignature(String signature, String timestamp, String nonce, String echostr,
                                  HttpServletResponse response, HttpServletRequest request) {
@@ -93,7 +93,7 @@ public class WxController {
 
     }
 
-    @PostMapping("/wx")
+    @PostMapping
     @ResponseBody
     public String message(HttpServletResponse response, HttpServletRequest request) {
             log.info("---------接受消息和事件推送----------");
