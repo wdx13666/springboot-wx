@@ -2,6 +2,8 @@ package com.wdx.springbootwx.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.wdx.springbootwx.menu.*;
+import com.wdx.springbootwx.message.TemplateData;
+import com.wdx.springbootwx.message.WxTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,7 +15,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 微信检验签名
@@ -65,6 +70,37 @@ public class WxUtil {
         url = url.replace("ACCESS_TOKEN",access_token).replace("OPENID",openId);
         JSONObject userInfoJson = WxUtil.doGetstr(url);
         return userInfoJson;
+    }
+
+    /**
+     * 发送模板消息
+     * appId 公众账号的唯一标识
+     * appSecret 公众账号的密钥
+     * openId 用户标识
+     */
+    public static void send_template_message(String appId, String appSecret, String openId,String access_token) {
+        String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+access_token;
+        WxTemplate temp = new WxTemplate();
+        temp.setUrl("http://www.baidu.com");
+        temp.setTouser(openId);
+        temp.setTopcolor("#000000");
+        temp.setTemplate_id("hhij9XUq2Z2u_hZKod_dOG5E3Dx0bLj_HmbhTr7bJF8");
+        Map<String,TemplateData> m = new HashMap<String,TemplateData>();
+        TemplateData name = new TemplateData();
+        name.setColor("#ff0000");
+        name.setValue("王大大");
+        m.put("name", name);
+        TemplateData shi = new TemplateData();
+        shi.setColor("#000000");
+        shi.setValue(LocalDate.now().toString());
+        m.put("shi", shi);
+        temp.setData(m);
+        String menu = JSONObject.toJSONString(temp);
+        JSONObject result = WxUtil.doPoststr(url,menu);
+        if("ok".equals(result.getString("errmsg"))){
+            log.info("添加菜单结果：{}", result);
+        }
+        log.info("添加菜单结果：{}", result);
     }
 
 

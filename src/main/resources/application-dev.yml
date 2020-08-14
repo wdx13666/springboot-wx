@@ -14,4 +14,4 @@ wx:
 #    root: debug
 
 server:
-  port: 9001
+  port: 8080
