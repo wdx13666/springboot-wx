@@ -69,7 +69,7 @@ public class MessageUtil {
      * @param FromUserName
      * @param ToUserName
      */
-    public static String initMessage(String FromUserName, String ToUserName,String content) {
+    public static String initMessage(String FromUserName, String ToUserName,String content,String msgType) {
         MessageText text = new MessageText();
         text.setToUserName(FromUserName);
         text.setFromUserName(ToUserName);

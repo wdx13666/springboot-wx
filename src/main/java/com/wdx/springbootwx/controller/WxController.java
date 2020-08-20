@@ -2,17 +2,13 @@ package com.wdx.springbootwx.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.taobao.api.ApiException;
-import com.taobao.api.DefaultTaobaoClient;
-import com.taobao.api.TaobaoClient;
-import com.taobao.api.request.TbkTpwdCreateRequest;
-import com.taobao.api.response.TbkDgMaterialOptionalResponse;
-import com.taobao.api.response.TbkTpwdCreateResponse;
 import com.wdx.springbootwx.config.WxConfig;
 import com.wdx.springbootwx.service.impl.WxServiceImpl;
+import com.wdx.springbootwx.utils.DataokeUtils;
 import com.wdx.springbootwx.utils.MessageUtil;
-import com.wdx.springbootwx.utils.TaoBaoUtils;
 import com.wdx.springbootwx.utils.WxUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -105,63 +101,117 @@ public class WxController {
 
     }
 
+    public static void main(String[] args) {
+        System.out.println(
+                "欢迎小可爱来到剁手党～\n" +
+                        "------------------------------\n" +
+                        "👇【使用方法】👇\n" +
+                        "复制淘宝商品分享链接发送至公众号，用公众号回复的链接直接复制至淘宝下单即可，免费领取隐藏优惠券哦😘 \n" +
+                        "关注我一段时间，如果你没有爱上我，再取关也不迟哦~");
+    }
+
     @PostMapping
     @ResponseBody
     public String message(HttpServletResponse response, HttpServletRequest request) throws ApiException {
         log.info("---------接受消息和事件推送----------");
         response.setCharacterEncoding("utf-8");
         PrintWriter out = null;
+        String contentB = null;
+        String message = null;
         //将微信请求xml转为map格式，获取所需的参数
         Map<String, String> map = MessageUtil.xmlToMap(request);
         String ToUserName = map.get("ToUserName");
         String FromUserName = map.get("FromUserName");
         String MsgType = map.get("MsgType");
+        String event = map.get("Event");
         String Content = map.get("Content");
-        //沙雕机器人
-        JSONObject jsonObject = WxUtil.doGetstr(wxConfig.getQing_url().replace("MSG", Content));
-        String contentB = jsonObject.getString("content");
 
-        //物料搜索
-        TbkDgMaterialOptionalResponse optional = TaoBaoUtils.optional(serverUrl, appKey, secert, Content);
-        TbkDgMaterialOptionalResponse.MapData mapData = optional.getResultList().get(0);
-        TbkTpwdCreateResponse tbkTpwdCreateResponse = TaoBaoUtils.create(serverUrl, appKey, secert, mapData.getTitle(),"https:" + mapData.getCouponShareUrl(), mapData.getPictUrl());
-        if (optional.getTotalResults() > 0 ){
-            contentB = mapData.getTitle() + "\n" +
-                    "【在售价】"+mapData.getReservePrice() +" 元\n" +
-                    "【券后价】"+mapData.getReservePrice() +"元\n" +
-                    "-----------------\n" +
-//                    "【立即领券】复制$pwhEc1W7zGL$打开手机淘宝领券并下单\n" +
-                    "【立即下单】复制"+ tbkTpwdCreateResponse.getData().getModel() +"打开手机淘宝立即下单";
-        }else {
-            contentB = "SORRY，未查询到优惠券,请查看其他商品!";
+        //用户关注公众号发送的消息
+        if ("subscribe".equals(event)) {
+            contentB = "欢迎小可爱来到剁手党～🌹\n\n" +
+                    "👇【使用方法】👇\n" +
+                    "复制淘宝商品的分享链接至公众号，复制公众号回复的链接至淘宝下单即可，免费领取隐藏优惠券哦😘\n" +
+                    "关注我一段时间，如果你没有爱上我，再取关也不迟哦~";
+            //处理文本类型,回复用户输入的内容
+            if ("text".equals(MsgType) || "event".equals(MsgType)) {
+                message = MessageUtil.initMessage(FromUserName, ToUserName, contentB, MsgType);
+            }
+            log.info("消息体：{}", message);
+            return message;
         }
-        String message = null;
+
+        //沙雕机器人
+//        JSONObject jsonObject = WxUtil.doGetstr(wxConfig.getQing_url().replace("MSG", Content));
+//        String contentB = jsonObject.getString("content");
+
+
+        //大淘客 淘口令获取商品id
+        JSONObject jsonObject = DataokeUtils.getGoodsId(Content);
+//        String title = jsonObject.get("goodsId").toString();
+//        String nowPrice = jsonObject.get("goodsId").toString();
+//        String yPircele = jsonObject.get("goodsId").toString();
+        if (jsonObject != null) {
+            //高佣转链接
+            String s = DataokeUtils.conventUrl(jsonObject.get("goodsId").toString());
+            JSONObject goodDetails = DataokeUtils.getGoodDetails(jsonObject.get("goodsId").toString());
+            //商品标题
+            String title = goodDetails.get("title").toString();
+            //图片
+            String mainPic = goodDetails.get("mainPic").toString();
+            //商品原价
+            String originalPrice = goodDetails.get("originalPrice").toString();
+            //券后价
+            String actualPrice = goodDetails.get("actualPrice").toString();
+            //优惠券额度
+            String couponPrice = goodDetails.get("couponPrice").toString();
+            //店铺名称
+            String shopName = goodDetails.get("shopName").toString();
+            String yh = "";
+            if (Integer.parseInt(couponPrice) > 0){
+                yh = "【预计优惠】" + couponPrice + "元\n";
+            }
+
+           /* TbkItemInfoGetResponse tbkItemInfoGetResponse = TaoBaoUtils.get(serverUrl, appKey, secert, jsonObject.get("goodsId").toString());
+            String itemUrl = tbkItemInfoGetResponse.getResults().get(0).getItemUrl();
+            String title = tbkItemInfoGetResponse.getResults().get(0).getTitle();
+            String pictUrl = tbkItemInfoGetResponse.getResults().get(0).getPictUrl();
+            String reservePrice = tbkItemInfoGetResponse.getResults().get(0).getReservePrice();
+            String zkFinalPrice = tbkItemInfoGetResponse.getResults().get(0).getZkFinalPrice();*/
+            //物料搜索
+//        TbkDgMaterialOptionalResponse optional = TaoBaoUtils.optional(serverUrl, appKey, secert, Content);
+//        TbkDgMaterialOptionalResponse.MapData mapData = optional.getResultList().get(0);
+//        TbkTpwdCreateResponse tbkTpwdCreateResponse = TaoBaoUtils.create(serverUrl, appKey, secert, mapData.getTitle(),"https:" + mapData.getCouponShareUrl(), mapData.getPictUrl());
+
+//        TbkTpwdCreateResponse tbkTpwdCreateResponse = TaoBaoUtils.create(serverUrl, appKey, secert, title,"https:" + itemUrl,pictUrl );
+            if (StringUtils.isNotBlank(jsonObject.get("goodsId").toString())) {
+                contentB ="店铺名称：" + shopName + "\n" +
+                            title + "\n" +
+                        "【在售价】" + originalPrice + " 元\n" +
+                        "【券后价】" + actualPrice + "元\n" +
+                        yh +
+                        "-----------------\n" +
+//                    "【立即领券】复制$pwhEc1W7zGL$打开手机淘宝领券并下单\n" +
+                        "【立即下单】复制" + s + "打开手机淘宝立即下单\n" +
+                        "【温馨提示】下单时候如果显示在售价格比自己看到的贵，点下单会自动减掉，最终价格以券后价为准。";
+            } else {
+                contentB = "SORRY，您查询的宝贝暂时没有活动，可以换销量高的宝贝试试!";
+            }
+        } else {
+            contentB = "SORRY，您查询的宝贝暂时没有活动，可以换销量高的宝贝试试!";
+//            contentB = "系统消息\n" +
+//                    "——————\n" +
+//                    "此宝贝暂时没有活动，可以换销量高的宝贝试试\n" +
+//                    "发“找+商品”试试，如“找口红”";
+        }
+
+
         //处理文本类型,回复用户输入的内容
         if ("text".equals(MsgType)) {
-            message = MessageUtil.initMessage(FromUserName, ToUserName, contentB);
+            message = MessageUtil.initMessage(FromUserName, ToUserName, contentB, MsgType);
         }
         log.info("消息体：{}", message);
         return message;
     }
-
-
-    public static void main(String[] args) throws ApiException {
-        TaobaoClient client = new DefaultTaobaoClient("http://gw.api.taobao.com/router/rest", "31007070", "996b541c4613a0431ad48ced1ac81c65");
-        //找到对应 类，比如taobao.trade.fullinfo.get接口对应的请求类为TradeFullinfoGetRequest
-        TbkTpwdCreateRequest req = new TbkTpwdCreateRequest();
-        //设置业务参数
-//      req.setUserId("123");
-        req.setText("快买我");
-//      req.setUrl("https://uland.taobao.com/");
-        req.setLogo("https://uland.taobao.com/");
-        req.setUrl("https://uland.taobao.com/coupon/edetail?e=SBqFy5IYW5cNfLV8niU3RxrSI%2FOabn6qNg4Gqf8CT4AKuDLwELihnSr%2B5TH%2FBzPHNSBSeq%2Bsk50F1ygf8uqQ6DDocfQoJ48C%2BJOLYARNiOav2kmLojfN6BLR9V68By6Nv5MBvZGSdn5s8quoD2oSyQ8O2wYVR3Y%2B2NUPkg%2BbDjKvLkDYcrKgNU%2BPZLGhy2fX59WqflzEvOXNa4fuEICbKf865raRWOux&&app_pvid=59590_11.15.221.126_702_1597311789932&ptl=floorId:2836;app_pvid:59590_11.15.221.126_702_1597311789932;tpp_pvid:100_11.179.213.231_95182_851597311789937315&xId=4RZ0M2W7vNvPIDrHEpHInEsP5wxUyWZJcDzJUatxiPNmAzZ2uxfswAphntcxZKgUEtSGdgxhMCycPngIoFIkOD6mtpw3h8RXYNmp0lDzsMCe&union_lens=lensId%3AMAPI%401597311790%400b0fdd7e_db2d_173e733abf1_5c0f%4001");
-        req.setExt("{}");
-
-        TbkTpwdCreateResponse rsp = client.execute(req);
-        System.out.println(rsp.getBody());
-    }
-
-
 
 
 }

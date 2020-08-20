@@ -11,4 +11,4 @@ wx:
   qing_url: http://api.qingyunke.com/api.php?key=free&appid=0&msg=MSG
 
 server:
-  port: 9000
+  port: 8080
